@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -11,40 +11,76 @@ import { initializeSampleData } from "@/lib/sample-data"
 
 export function DataManagement() {
   const [isClearing, setIsClearing] = useState(false)
+  const [stats, setStats] = useState({
+    users: 0,
+    complaints: 0,
+    hasSession: false,
+  })
   const { toast } = useToast()
 
   const getStorageStats = () => {
-    const users = JSON.parse(localStorage.getItem("munidenuncia_users") || "[]")
-    const complaints = JSON.parse(localStorage.getItem("munidenuncia_complaints") || "[]")
-    const currentUser = localStorage.getItem("munidenuncia_user")
+    if (typeof window === "undefined") {
+      return {
+        users: 0,
+        complaints: 0,
+        hasSession: false,
+      }
+    }
 
-    return {
-      users: users.length,
-      complaints: complaints.length,
-      hasSession: !!currentUser,
+    try {
+      const users = JSON.parse(localStorage.getItem("munidenuncia_users") || "[]")
+      const complaints = JSON.parse(localStorage.getItem("munidenuncia_complaints") || "[]")
+      const currentUser = localStorage.getItem("munidenuncia_user")
+
+      return {
+        users: users.length,
+        complaints: complaints.length,
+        hasSession: !!currentUser,
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error)
+      return {
+        users: 0,
+        complaints: 0,
+        hasSession: false,
+      }
     }
   }
 
-  const [stats, setStats] = useState(getStorageStats())
+  useEffect(() => {
+    setStats(getStorageStats())
+  }, [])
 
   const clearAllData = async () => {
+    if (typeof window === "undefined") return
+
     setIsClearing(true)
 
     // Simulate loading
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    localStorage.removeItem("munidenuncia_users")
-    localStorage.removeItem("munidenuncia_complaints")
-    localStorage.removeItem("munidenuncia_user")
-    localStorage.removeItem("munidenuncia_token")
+    try {
+      localStorage.removeItem("munidenuncia_users")
+      localStorage.removeItem("munidenuncia_complaints")
+      localStorage.removeItem("munidenuncia_user")
+      localStorage.removeItem("munidenuncia_token")
 
-    setStats(getStorageStats())
+      setStats(getStorageStats())
+
+      toast({
+        title: "Datos eliminados",
+        description: "Todos los datos han sido eliminados del almacenamiento local",
+      })
+    } catch (error) {
+      console.error("Error clearing localStorage:", error)
+      toast({
+        title: "Error",
+        description: "Hubo un problema al eliminar los datos",
+        variant: "destructive",
+      })
+    }
+
     setIsClearing(false)
-
-    toast({
-      title: "Datos eliminados",
-      description: "Todos los datos han sido eliminados del almacenamiento local",
-    })
   }
 
   const loadSampleData = () => {
@@ -58,26 +94,37 @@ export function DataManagement() {
   }
 
   const exportData = () => {
-    const data = {
-      users: JSON.parse(localStorage.getItem("munidenuncia_users") || "[]"),
-      complaints: JSON.parse(localStorage.getItem("munidenuncia_complaints") || "[]"),
-      exportDate: new Date().toISOString(),
+    if (typeof window === "undefined") return
+
+    try {
+      const data = {
+        users: JSON.parse(localStorage.getItem("munidenuncia_users") || "[]"),
+        complaints: JSON.parse(localStorage.getItem("munidenuncia_complaints") || "[]"),
+        exportDate: new Date().toISOString(),
+      }
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `munidenuncia-backup-${new Date().toISOString().split("T")[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast({
+        title: "Datos exportados",
+        description: "Los datos han sido descargados como archivo JSON",
+      })
+    } catch (error) {
+      console.error("Error exporting data:", error)
+      toast({
+        title: "Error",
+        description: "Hubo un problema al exportar los datos",
+        variant: "destructive",
+      })
     }
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `munidenuncia-backup-${new Date().toISOString().split("T")[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-
-    toast({
-      title: "Datos exportados",
-      description: "Los datos han sido descargados como archivo JSON",
-    })
   }
 
   return (
