@@ -31,6 +31,7 @@ import {
   Camera,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { LocationMapWrapper } from "./location-map-wrapper"
 
 const PROBLEM_TYPES = [
   {
@@ -111,6 +112,7 @@ export function ComplaintFormWizard() {
     photos: [],
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [showMap, setShowMap] = useState(false)
   const { createComplaint, isLoading } = useComplaints()
   const router = useRouter()
   const { toast } = useToast()
@@ -223,10 +225,33 @@ export function ComplaintFormWizard() {
   }
 
   const generateCoordinates = () => {
-    // Simulate coordinate generation based on address
-    const lat = (Math.random() * 0.1 + 19.4).toFixed(6)
-    const lng = (Math.random() * 0.1 - 99.1).toFixed(6)
+    // Generate random coordinates around Santiago de Chile area
+    const lat = (Math.random() * 0.1 - 33.45).toFixed(6) // Around Santiago latitude
+    const lng = (Math.random() * 0.1 - 70.67).toFixed(6)  // Around Santiago longitude
     setFormData((prev) => ({ ...prev, coordinates: `${lat}, ${lng}` }))
+  }
+
+  const handleLocationSelect = (lat: number, lng: number, address?: string) => {
+    const coordinates = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    setFormData((prev) => ({
+      ...prev,
+      coordinates,
+      // Update address if we got one from reverse geocoding and current address is empty
+      address: address && !prev.address.trim() ? address : prev.address
+    }))
+    setShowMap(false)
+    toast({
+      title: "Ubicación seleccionada",
+      description: address ? "Ubicación y dirección actualizadas" : "La ubicación ha sido actualizada en el mapa",
+    })
+  }
+
+  const openMap = () => {
+    setShowMap(true)
+  }
+
+  const closeMap = () => {
+    setShowMap(false)
   }
 
   const handleSubmit = async () => {
@@ -237,7 +262,7 @@ export function ComplaintFormWizard() {
       title: formData.typeName,
       description: formData.description,
       address: formData.address,
-      coordinates: formData.coordinates || "19.4326, -99.1332", // Default Mexico City coordinates
+      coordinates: formData.coordinates || "-33.4489, -70.6693", // Default Santiago de Chile coordinates
     })
 
     if (success) {
@@ -334,13 +359,13 @@ export function ComplaintFormWizard() {
               <Label htmlFor="address">Dirección *</Label>
               <Input
                 id="address"
-                placeholder="Ej: Av. Reforma 123, Col. Centro, Ciudad de México"
+                placeholder="Ej: Av. Providencia 123, Providencia, Santiago"
                 value={formData.address}
                 onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
                 className={errors.address ? "border-destructive" : ""}
               />
               <p className="text-sm text-muted-foreground">
-                Incluye calle, número, colonia y referencias que ayuden a localizar el problema
+                Incluye calle, número, comuna y referencias. Usa el mapa para auto-completar la dirección.
               </p>
             </div>
 
@@ -349,18 +374,21 @@ export function ComplaintFormWizard() {
               <div className="flex gap-2">
                 <Input
                   id="coordinates"
-                  placeholder="19.4326, -99.1332"
+                  placeholder="-33.4489, -70.6693"
                   value={formData.coordinates}
                   onChange={(e) => setFormData((prev) => ({ ...prev, coordinates: e.target.value }))}
                   readOnly
                 />
-                <Button type="button" variant="outline" onClick={generateCoordinates}>
+                <Button type="button" variant="outline" onClick={openMap}>
                   <MapPin className="h-4 w-4 mr-2" />
+                  Mapa
+                </Button>
+                <Button type="button" variant="outline" onClick={generateCoordinates}>
                   Generar
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Las coordenadas se generan automáticamente basadas en la dirección
+                Usa el mapa para seleccionar la ubicación exacta o genera coordenadas aleatorias
               </p>
             </div>
           </CardContent>
@@ -487,6 +515,26 @@ export function ComplaintFormWizard() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Location Map Modal */}
+      {showMap && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-auto">
+            <LocationMapWrapper
+              onLocationSelect={handleLocationSelect}
+              onClose={closeMap}
+              initialLocation={
+                formData.coordinates
+                  ? {
+                    lat: parseFloat(formData.coordinates.split(",")[0]),
+                    lng: parseFloat(formData.coordinates.split(",")[1]),
+                  }
+                  : undefined
+              }
+            />
+          </div>
+        </div>
       )}
 
       {/* Navigation Buttons */}

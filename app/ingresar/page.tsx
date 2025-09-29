@@ -18,7 +18,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
-  const { login, isLoading } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -31,7 +32,9 @@ export default function LoginPage() {
       return
     }
 
+    setIsLoading(true)
     const success = await login(email, password)
+    setIsLoading(false)
 
     if (success) {
       toast({

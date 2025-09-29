@@ -13,14 +13,14 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   register: (email: string, password: string, name: string) => Promise<boolean>
   logout: () => void
-  isLoading: boolean
+  isInitializing: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isInitializing, setIsInitializing] = useState(true)
 
   useEffect(() => {
     // Check for existing session on mount
@@ -28,12 +28,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
-    setIsLoading(false)
+    setIsInitializing(false)
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true)
-
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -46,17 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData)
       localStorage.setItem("munidenuncia_user", JSON.stringify(userData))
       localStorage.setItem("munidenuncia_token", "mock-jwt-token")
-      setIsLoading(false)
       return true
     }
 
-    setIsLoading(false)
     return false
   }
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
-    setIsLoading(true)
-
     // Simulate API call delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -65,7 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const existingUser = users.find((u: any) => u.email === email)
 
     if (existingUser) {
-      setIsLoading(false)
       return false
     }
 
@@ -85,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("munidenuncia_user", JSON.stringify(userData))
     localStorage.setItem("munidenuncia_token", "mock-jwt-token")
 
-    setIsLoading(false)
     return true
   }
 
@@ -95,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("munidenuncia_token")
   }
 
-  return <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, login, register, logout, isInitializing }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

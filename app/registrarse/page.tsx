@@ -20,7 +20,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
-  const { register, isLoading } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const { register } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -43,7 +44,9 @@ export default function RegisterPage() {
       return
     }
 
+    setIsLoading(true)
     const success = await register(email, password, name)
+    setIsLoading(false)
 
     if (success) {
       toast({

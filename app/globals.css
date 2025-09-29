@@ -128,7 +128,26 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Leaflet map styles */
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+.leaflet-control-zoom {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+  border-radius: 0;
 }
