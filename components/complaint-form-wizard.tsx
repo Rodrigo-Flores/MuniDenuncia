@@ -28,6 +28,7 @@ import {
   X,
   MapPin,
   Loader2,
+  Camera,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -96,7 +97,7 @@ interface FormData {
   address: string
   coordinates: string
   description: string
-  photo: File | null
+  photos: File[]
 }
 
 export function ComplaintFormWizard() {
@@ -107,7 +108,7 @@ export function ComplaintFormWizard() {
     address: "",
     coordinates: "",
     description: "",
-    photo: null,
+    photos: [],
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const { createComplaint, isLoading } = useComplaints()
@@ -165,25 +166,60 @@ export function ComplaintFormWizard() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors({ photo: "La imagen debe ser menor a 5MB" })
+    const files = e.target.files
+    if (files) {
+      const validFiles: File[] = []
+      const errors: string[] = []
+
+      Array.from(files).forEach((file) => {
+        // Validate file size (max 5MB per file)
+        if (file.size > 5 * 1024 * 1024) {
+          errors.push(`${file.name}: debe ser menor a 5MB`)
+          return
+        }
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          errors.push(`${file.name}: solo se permiten imágenes`)
+          return
+        }
+        validFiles.push(file)
+      })
+
+      if (errors.length > 0) {
+        setErrors({ photos: errors.join(", ") })
         return
       }
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        setErrors({ photo: "Solo se permiten archivos de imagen" })
-        return
-      }
-      setFormData((prev) => ({ ...prev, photo: file }))
+
+      setFormData((prev) => ({
+        ...prev,
+        photos: [...prev.photos, ...validFiles].slice(0, 5) // Max 5 photos
+      }))
       setErrors({})
     }
   }
 
-  const removePhoto = () => {
-    setFormData((prev) => ({ ...prev, photo: null }))
+  const handleCameraCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors({ photos: "La imagen debe ser menor a 5MB" })
+        return
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        photos: [...prev.photos, file].slice(0, 5) // Max 5 photos
+      }))
+      setErrors({})
+    }
+  }
+
+  const removePhoto = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index)
+    }))
   }
 
   const generateCoordinates = () => {
@@ -255,9 +291,8 @@ export function ComplaintFormWizard() {
                   <button
                     key={problemType.id}
                     onClick={() => handleTypeSelect(problemType)}
-                    className={`p-4 rounded-lg border-2 text-left transition-all hover:shadow-md ${
-                      isSelected ? "border-primary bg-primary/5 shadow-md" : "border-border hover:border-primary/50"
-                    }`}
+                    className={`p-4 rounded-lg border-2 text-left transition-all hover:shadow-md ${isSelected ? "border-primary bg-primary/5 shadow-md" : "border-border hover:border-primary/50"
+                      }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded-md ${problemType.color}`}>
@@ -340,9 +375,9 @@ export function ComplaintFormWizard() {
             <p className="text-muted-foreground">Describe el problema y agrega una foto si es posible</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {(errors.description || errors.photo) && (
+            {(errors.description || errors.photos) && (
               <Alert variant="destructive">
-                <AlertDescription>{errors.description || errors.photo}</AlertDescription>
+                <AlertDescription>{errors.description || errors.photos}</AlertDescription>
               </Alert>
             )}
 
@@ -360,45 +395,92 @@ export function ComplaintFormWizard() {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label>Fotografía (opcional)</Label>
-              {!formData.photo ? (
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                  <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Arrastra una imagen aquí o haz clic para seleccionar
+            <div className="space-y-4">
+              <Label>Fotografías (opcional)</Label>
+
+              {/* Upload area */}
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex items-center gap-4">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <Camera className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Selecciona imágenes desde tu dispositivo o toma fotos con la cámara
                   </p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="photo-upload"
-                  />
-                  <Button type="button" variant="outline" asChild>
-                    <label htmlFor="photo-upload" className="cursor-pointer">
-                      Seleccionar Imagen
-                    </label>
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-2">Máximo 5MB. Formatos: JPG, PNG, GIF</p>
-                </div>
-              ) : (
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-12 w-12 bg-muted rounded-md flex items-center justify-center">
-                        <Upload className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{formData.photo.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(formData.photo.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={removePhoto}>
-                      <X className="h-4 w-4" />
+
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {/* File upload */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="photo-upload"
+                      multiple
+                    />
+                    <Button type="button" variant="outline" asChild>
+                      <label htmlFor="photo-upload" className="cursor-pointer">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Seleccionar Imágenes
+                      </label>
                     </Button>
+
+                    {/* Camera capture */}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleCameraCapture}
+                      className="hidden"
+                      id="camera-capture"
+                    />
+                    <Button type="button" variant="outline" asChild>
+                      <label htmlFor="camera-capture" className="cursor-pointer">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Tomar Foto
+                      </label>
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Máximo 5 fotos, 5MB cada una. Formatos: JPG, PNG, GIF
+                  </p>
+                </div>
+              </div>
+
+              {/* Photos preview */}
+              {formData.photos.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">
+                    Fotos seleccionadas ({formData.photos.length}/5)
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {formData.photos.map((photo, index) => (
+                      <div key={index} className="border rounded-lg p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-muted rounded-md flex items-center justify-center">
+                              <Upload className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">{photo.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {(photo.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removePhoto(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

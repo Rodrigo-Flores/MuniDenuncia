@@ -42,7 +42,7 @@ export function useComplaints() {
   }
 
   const createComplaint = async (
-    complaintData: Omit<Complaint, "id" | "userId" | "createdAt" | "updatedAt" | "statusHistory">,
+    complaintData: Omit<Complaint, "id" | "userId" | "createdAt" | "updatedAt" | "statusHistory" | "status">,
   ): Promise<boolean> => {
     if (!user) return false
 
