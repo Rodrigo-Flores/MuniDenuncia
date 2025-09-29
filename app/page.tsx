@@ -35,11 +35,13 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Building2 className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">MuniDenuncia</h1>
-                <p className="text-sm text-muted-foreground">Sistema Municipal de Denuncias</p>
-              </div>
+              <Link href="/" className="flex items-center gap-3">
+                <Building2 className="h-8 w-8 text-primary" />
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">MuniDenuncia</h1>
+                  <p className="text-sm text-muted-foreground">Sistema Municipal de Denuncias</p>
+                </div>
+              </Link>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" asChild>

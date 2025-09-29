@@ -44,13 +44,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center border-b px-6">
+      <Link href="/" className="flex h-16 shrink-0 items-center border-b px-6">
         <Building2 className="h-8 w-8 text-primary" />
         <div className="ml-3">
           <h1 className="text-lg font-semibold">MuniDenuncia</h1>
           <p className="text-xs text-muted-foreground">Sistema Municipal</p>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-4 py-6">
@@ -61,11 +61,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               key={item.name}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                item.current
+              className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${item.current
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              }`}
+                }`}
             >
               <Icon className="mr-3 h-5 w-5 shrink-0" />
               {item.name}

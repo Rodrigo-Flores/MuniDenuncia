@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 import type { Complaint } from "@/hooks/use-complaints"
 import { ComplaintStatusBadge } from "./complaint-status-badge"
 import { Button } from "@/components/ui/button"
@@ -24,7 +25,7 @@ export function ComplaintsTable({ complaints, onViewComplaint }: ComplaintsTable
               Aún no has creado ninguna denuncia. ¡Comienza reportando un problema!
             </p>
             <Button asChild>
-              <a href="/crear-denuncia">Crear Primera Denuncia</a>
+              <Link href="/crear-denuncia">Crear Primera Denuncia</Link>
             </Button>
           </div>
         </CardContent>
