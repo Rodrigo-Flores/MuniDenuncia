@@ -121,13 +121,13 @@ export const SAMPLE_COMPLAINTS: Complaint[] = [
 export function initializeSampleData() {
   // Initialize sample users if none exist
   const existingUsers = localStorage.getItem("munidenuncia_users")
-  if (!existingUsers) {
+  if (!existingUsers) { //! enable this to auto initialize sample data
     localStorage.setItem("munidenuncia_users", JSON.stringify(SAMPLE_USERS))
   }
 
   // Initialize sample complaints if none exist
   const existingComplaints = localStorage.getItem("munidenuncia_complaints")
-  if (!existingComplaints) {
-    localStorage.setItem("munidenuncia_complaints", JSON.stringify(SAMPLE_COMPLAINTS))
-  }
+  // if (!existingComplaints) { //! enable this to auto initialize sample data
+  //   localStorage.setItem("munidenuncia_complaints", JSON.stringify(SAMPLE_COMPLAINTS))
+  // }
 }
