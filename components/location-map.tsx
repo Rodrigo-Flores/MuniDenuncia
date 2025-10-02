@@ -212,48 +212,7 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
             {isLoadingLocation ? "Obteniendo..." : "Mi Ubicación"}
           </Button>
 
-          {selectedLocation && (
-            <div className="space-y-2">
-              <div className="text-sm text-muted-foreground flex items-center">
-                <MapPin className="h-3 w-3 mr-1" />
-                {selectedLocation.lat.toFixed(6)}, {selectedLocation.lng.toFixed(6)}
-              </div>
-              {isLoadingAddress && (
-                <div className="text-sm text-muted-foreground flex items-center">
-                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  Obteniendo dirección...
-                </div>
-              )}
-              {parsedAddress && (
-                <div className="text-sm text-foreground p-2 bg-muted rounded">
-                  <p className="font-medium mb-2">Dirección encontrada:</p>
-                  <div className="space-y-1 text-xs">
-                    {parsedAddress.region && (
-                      <div className="flex">
-                        <span className="font-medium w-14 shrink-0">Región:</span>
-                        <span className="text-muted-foreground">{parsedAddress.region}</span>
-                      </div>
-                    )}
-                    {parsedAddress.comuna && (
-                      <div className="flex">
-                        <span className="font-medium w-14 shrink-0">Comuna:</span>
-                        <span className="text-muted-foreground">{parsedAddress.comuna}</span>
-                      </div>
-                    )}
-                    {parsedAddress.calle && (
-                      <div className="flex">
-                        <span className="font-medium w-14 shrink-0">Calle:</span>
-                        <span className="text-muted-foreground">
-                          {parsedAddress.calle}
-                          {parsedAddress.numero && ` ${parsedAddress.numero}`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+
         </div>
 
         <div className="h-64 sm:h-96 w-full rounded-lg overflow-hidden border">

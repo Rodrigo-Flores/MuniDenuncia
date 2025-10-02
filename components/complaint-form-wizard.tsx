@@ -140,8 +140,11 @@ export function ComplaintFormWizard() {
         }
         break
       case 2:
-        if (!formData.address.trim()) {
-          newErrors.address = "Ingresa la dirección del problema"
+        if (!formData.parsedAddress?.comuna?.trim()) {
+          newErrors.address = "La comuna es requerida"
+        }
+        if (!formData.parsedAddress?.calle?.trim()) {
+          newErrors.address = "La calle es requerida"
         }
         break
       case 3:
@@ -239,14 +242,13 @@ export function ComplaintFormWizard() {
     setFormData((prev) => ({
       ...prev,
       coordinates,
-      // Update address if we got one from reverse geocoding and current address is empty
-      address: address && !prev.address.trim() ? address : prev.address,
-      parsedAddress: parsedAddress || null
+      address: address || "",
+      parsedAddress: parsedAddress || prev.parsedAddress || null
     }))
     setShowMap(false)
     toast({
       title: "Ubicación seleccionada",
-      description: address ? "Ubicación y dirección actualizadas" : "La ubicación ha sido actualizada en el mapa",
+      description: parsedAddress ? "Dirección actualizada desde el mapa" : "La ubicación ha sido actualizada en el mapa",
     })
   }
 
@@ -261,11 +263,28 @@ export function ComplaintFormWizard() {
   const handleSubmit = async () => {
     if (!validateStep(3)) return
 
+    // Construct address from parsed address fields
+    const addressParts = []
+    if (formData.parsedAddress?.calle) {
+      let street = formData.parsedAddress.calle
+      if (formData.parsedAddress.numero) {
+        street += ` ${formData.parsedAddress.numero}`
+      }
+      addressParts.push(street)
+    }
+    if (formData.parsedAddress?.comuna) {
+      addressParts.push(formData.parsedAddress.comuna)
+    }
+    if (formData.parsedAddress?.region) {
+      addressParts.push(formData.parsedAddress.region)
+    }
+    const finalAddress = addressParts.length > 0 ? addressParts.join(", ") : formData.address
+
     const success = await createComplaint({
       type: formData.typeName,
       title: formData.typeName,
       description: formData.description,
-      address: formData.address,
+      address: finalAddress,
       coordinates: formData.coordinates || "-33.4489, -70.6693", // Default Santiago de Chile coordinates
     })
 
@@ -363,49 +382,91 @@ export function ComplaintFormWizard() {
               </Alert>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="address">Dirección *</Label>
-              <Input
-                id="address"
-                placeholder="Ej: Av. Providencia 123, Providencia, Santiago"
-                value={formData.address}
-                onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                className={errors.address ? "border-destructive" : ""}
-              />
+            <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Incluye calle, número, comuna y referencias. Usa el mapa para auto-completar la dirección.
+                Completa los campos de dirección o usa el mapa para auto-completar.
               </p>
-            </div>
 
-            {/* Parsed Address Display */}
-            {formData.parsedAddress && (
-              <div className="p-3 bg-muted/50 rounded-lg border">
-                <p className="text-sm font-medium mb-2">Dirección:</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  {formData.parsedAddress.region && (
-                    <div className="flex">
-                      <span className="font-medium w-16 shrink-0 text-muted-foreground">Región:</span>
-                      <span>{formData.parsedAddress.region}</span>
-                    </div>
-                  )}
-                  {formData.parsedAddress.comuna && (
-                    <div className="flex">
-                      <span className="font-medium w-16 shrink-0 text-muted-foreground">Comuna:</span>
-                      <span>{formData.parsedAddress.comuna}</span>
-                    </div>
-                  )}
-                  {formData.parsedAddress.calle && (
-                    <div className="flex sm:col-span-2">
-                      <span className="font-medium w-16 shrink-0 text-muted-foreground">Calle:</span>
-                      <span>
-                        {formData.parsedAddress.calle}
-                        {formData.parsedAddress.numero && ` ${formData.parsedAddress.numero}`}
-                      </span>
-                    </div>
-                  )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="region">Región</Label>
+                  <Input
+                    id="region"
+                    placeholder="Ej: Región Metropolitana"
+                    value={formData.parsedAddress?.region || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      parsedAddress: {
+                        ...prev.parsedAddress,
+                        region: e.target.value || null,
+                        comuna: prev.parsedAddress?.comuna || null,
+                        calle: prev.parsedAddress?.calle || null,
+                        numero: prev.parsedAddress?.numero || null,
+                      }
+                    }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="comuna">Comuna *</Label>
+                  <Input
+                    id="comuna"
+                    placeholder="Ej: Providencia"
+                    value={formData.parsedAddress?.comuna || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      parsedAddress: {
+                        ...prev.parsedAddress,
+                        region: prev.parsedAddress?.region || null,
+                        comuna: e.target.value || null,
+                        calle: prev.parsedAddress?.calle || null,
+                        numero: prev.parsedAddress?.numero || null,
+                      }
+                    }))}
+                    className={errors.address ? "border-destructive" : ""}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="calle">Calle *</Label>
+                  <Input
+                    id="calle"
+                    placeholder="Ej: Av. Providencia"
+                    value={formData.parsedAddress?.calle || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      parsedAddress: {
+                        ...prev.parsedAddress,
+                        region: prev.parsedAddress?.region || null,
+                        comuna: prev.parsedAddress?.comuna || null,
+                        calle: e.target.value || null,
+                        numero: prev.parsedAddress?.numero || null,
+                      }
+                    }))}
+                    className={errors.address ? "border-destructive" : ""}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="numero">Número</Label>
+                  <Input
+                    id="numero"
+                    placeholder="Ej: 123"
+                    value={formData.parsedAddress?.numero || ""}
+                    onChange={(e) => setFormData((prev) => ({
+                      ...prev,
+                      parsedAddress: {
+                        ...prev.parsedAddress,
+                        region: prev.parsedAddress?.region || null,
+                        comuna: prev.parsedAddress?.comuna || null,
+                        calle: prev.parsedAddress?.calle || null,
+                        numero: e.target.value || null,
+                      }
+                    }))}
+                  />
                 </div>
               </div>
-            )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="coordinates">Coordenadas (opcional)</Label>
@@ -585,11 +646,16 @@ export function ComplaintFormWizard() {
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={isLoading}>
+          <Button onClick={handleSubmit} disabled={isLoading || isRedirecting}>
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Enviando...
+              </>
+            ) : isRedirecting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Redirigiendo...
               </>
             ) : (
               "Enviar Denuncia"
