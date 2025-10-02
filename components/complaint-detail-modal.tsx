@@ -9,6 +9,21 @@ import { ComplaintStatusBadge } from "./complaint-status-badge"
 import { Calendar, MapPin, FileText, MessageSquare, Building2, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
+import dynamic from "next/dynamic"
+import { Suspense } from "react"
+
+// Dynamically import the map component to avoid SSR issues
+const ComplaintLocationMap = dynamic(() => import('./complaint-location-map').then(mod => ({ default: mod.ComplaintLocationMap })), {
+  ssr: false,
+  loading: () => (
+    <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
+      <div className="text-center">
+        <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Cargando mapa...</p>
+      </div>
+    </div>
+  )
+})
 
 interface ComplaintDetailModalProps {
   complaint: Complaint | null
@@ -99,7 +114,7 @@ export function ComplaintDetailModal({ complaint, open, onOpenChange }: Complain
 
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground mb-1">Ubicación</h4>
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2 mb-3">
                   <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
                     <p>{complaint.address}</p>
@@ -108,6 +123,25 @@ export function ComplaintDetailModal({ complaint, open, onOpenChange }: Complain
                     )}
                   </div>
                 </div>
+
+                {/* Mini Map */}
+                {complaint.coordinates && (
+                  <div className="mt-3">
+                    <Suspense fallback={
+                      <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <MapPin className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">Cargando mapa...</p>
+                        </div>
+                      </div>
+                    }>
+                      <ComplaintLocationMap
+                        coordinates={complaint.coordinates}
+                        address={complaint.address}
+                      />
+                    </Suspense>
+                  </div>
+                )}
               </div>
 
               <div>
