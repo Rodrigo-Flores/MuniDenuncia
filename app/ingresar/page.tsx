@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
   const { login } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
@@ -37,11 +38,15 @@ export default function LoginPage() {
     setIsLoading(false)
 
     if (success) {
+      setIsRedirecting(true)
       toast({
         title: "Bienvenido",
         description: "Has iniciado sesión correctamente",
       })
-      router.push("/mis-denuncias")
+      // Small delay to show the success state before redirect
+      setTimeout(() => {
+        router.push("/mis-denuncias")
+      }, 1500)
     } else {
       setError("Credenciales incorrectas. Verifica tu email y contraseña.")
     }
@@ -83,7 +88,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                 />
               </div>
 
@@ -96,15 +101,20 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || isRedirecting}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Ingresando...
+                  </>
+                ) : isRedirecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Redirigiendo...
                   </>
                 ) : (
                   "Ingresar"

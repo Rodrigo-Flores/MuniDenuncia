@@ -21,6 +21,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
   const { register } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
@@ -49,11 +50,15 @@ export default function RegisterPage() {
     setIsLoading(false)
 
     if (success) {
+      setIsRedirecting(true)
       toast({
         title: "¡Cuenta creada!",
         description: "Tu cuenta ha sido creada exitosamente",
       })
-      router.push("/mis-denuncias")
+      // Small delay to show the success state before redirect
+      setTimeout(() => {
+        router.push("/mis-denuncias")
+      }, 1500)
     } else {
       setError("Ya existe una cuenta con este correo electrónico")
     }
@@ -95,7 +100,7 @@ export default function RegisterPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Tu nombre completo"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                 />
               </div>
 
@@ -108,7 +113,7 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                 />
               </div>
 
@@ -121,7 +126,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                 />
               </div>
 
@@ -134,15 +139,20 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || isRedirecting}
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || isRedirecting}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creando cuenta...
+                  </>
+                ) : isRedirecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Redirigiendo...
                   </>
                 ) : (
                   "Crear Cuenta"

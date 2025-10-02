@@ -10,7 +10,7 @@ import { ComplaintsTable } from "@/components/complaints-table"
 import { ComplaintDetailModal } from "@/components/complaint-detail-modal"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, FileText, Clock, CheckCircle } from "lucide-react"
+import { Plus, FileText, Clock, CheckCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 
 export default function MisDenunciasPage() {
@@ -132,7 +132,16 @@ export default function MisDenunciasPage() {
         />
 
         {/* Complaints Table */}
-        <ComplaintsTable complaints={filteredComplaints} onViewComplaint={handleViewComplaint} />
+        {isLoading ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Cargando denuncias...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <ComplaintsTable complaints={filteredComplaints} onViewComplaint={handleViewComplaint} />
+        )}
 
         {/* Detail Modal */}
         <ComplaintDetailModal complaint={selectedComplaint} open={modalOpen} onOpenChange={setModalOpen} />

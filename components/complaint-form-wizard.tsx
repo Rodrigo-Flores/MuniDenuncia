@@ -113,6 +113,7 @@ export function ComplaintFormWizard() {
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showMap, setShowMap] = useState(false)
+  const [isRedirecting, setIsRedirecting] = useState(false)
   const { createComplaint, isLoading } = useComplaints()
   const router = useRouter()
   const { toast } = useToast()
@@ -222,13 +223,6 @@ export function ComplaintFormWizard() {
       ...prev,
       photos: prev.photos.filter((_, i) => i !== index)
     }))
-  }
-
-  const generateCoordinates = () => {
-    // Generate random coordinates around Santiago de Chile area
-    const lat = (Math.random() * 0.1 - 33.45).toFixed(6) // Around Santiago latitude
-    const lng = (Math.random() * 0.1 - 70.67).toFixed(6)  // Around Santiago longitude
-    setFormData((prev) => ({ ...prev, coordinates: `${lat}, ${lng}` }))
   }
 
   const handleLocationSelect = (lat: number, lng: number, address?: string) => {
@@ -383,12 +377,9 @@ export function ComplaintFormWizard() {
                   <MapPin className="h-4 w-4 mr-2" />
                   Mapa
                 </Button>
-                <Button type="button" variant="outline" onClick={generateCoordinates}>
-                  Generar
-                </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                Usa el mapa para seleccionar la ubicación exacta o genera coordenadas aleatorias
+                Usa el mapa para seleccionar la ubicación exacta del problema
               </p>
             </div>
           </CardContent>
