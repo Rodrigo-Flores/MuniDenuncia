@@ -244,10 +244,17 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!selectedLocation}
+            disabled={!selectedLocation || isLoadingAddress}
             className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
           >
-            Confirmar Ubicación
+            {isLoadingAddress ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Obteniendo dirección...
+              </>
+            ) : (
+              "Confirmar Ubicación"
+            )}
           </Button>
         </div>
       </CardContent>
