@@ -8,8 +8,15 @@ const LocationMapComponent = lazy(() =>
   import('./location-map').then(module => ({ default: module.LocationMap }))
 )
 
+interface ParsedAddress {
+  region: string | null
+  comuna: string | null
+  calle: string | null
+  numero: string | null
+}
+
 interface LocationMapWrapperProps {
-  onLocationSelect: (lat: number, lng: number, address?: string) => void
+  onLocationSelect: (lat: number, lng: number, address?: string, parsedAddress?: ParsedAddress) => void
   onClose: () => void
   initialLocation?: { lat: number; lng: number }
 }

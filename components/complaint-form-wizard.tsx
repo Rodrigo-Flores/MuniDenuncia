@@ -92,10 +92,18 @@ const PROBLEM_TYPES = [
   },
 ]
 
+interface ParsedAddress {
+  region: string | null
+  comuna: string | null
+  calle: string | null
+  numero: string | null
+}
+
 interface FormData {
   type: string
   typeName: string
   address: string
+  parsedAddress: ParsedAddress | null
   coordinates: string
   description: string
   photos: File[]
@@ -107,6 +115,7 @@ export function ComplaintFormWizard() {
     type: "",
     typeName: "",
     address: "",
+    parsedAddress: null,
     coordinates: "",
     description: "",
     photos: [],
@@ -225,13 +234,14 @@ export function ComplaintFormWizard() {
     }))
   }
 
-  const handleLocationSelect = (lat: number, lng: number, address?: string) => {
+  const handleLocationSelect = (lat: number, lng: number, address?: string, parsedAddress?: ParsedAddress) => {
     const coordinates = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
     setFormData((prev) => ({
       ...prev,
       coordinates,
       // Update address if we got one from reverse geocoding and current address is empty
-      address: address && !prev.address.trim() ? address : prev.address
+      address: address && !prev.address.trim() ? address : prev.address,
+      parsedAddress: parsedAddress || null
     }))
     setShowMap(false)
     toast({
@@ -260,11 +270,15 @@ export function ComplaintFormWizard() {
     })
 
     if (success) {
+      setIsRedirecting(true)
       toast({
         title: "¡Denuncia creada!",
         description: "Tu denuncia ha sido enviada correctamente",
       })
-      router.push("/mis-denuncias")
+      // Small delay to show the success state before redirect
+      setTimeout(() => {
+        router.push("/mis-denuncias")
+      }, 2000)
     } else {
       toast({
         title: "Error",
@@ -362,6 +376,36 @@ export function ComplaintFormWizard() {
                 Incluye calle, número, comuna y referencias. Usa el mapa para auto-completar la dirección.
               </p>
             </div>
+
+            {/* Parsed Address Display */}
+            {formData.parsedAddress && (
+              <div className="p-3 bg-muted/50 rounded-lg border">
+                <p className="text-sm font-medium mb-2">Dirección:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  {formData.parsedAddress.region && (
+                    <div className="flex">
+                      <span className="font-medium w-16 shrink-0 text-muted-foreground">Región:</span>
+                      <span>{formData.parsedAddress.region}</span>
+                    </div>
+                  )}
+                  {formData.parsedAddress.comuna && (
+                    <div className="flex">
+                      <span className="font-medium w-16 shrink-0 text-muted-foreground">Comuna:</span>
+                      <span>{formData.parsedAddress.comuna}</span>
+                    </div>
+                  )}
+                  {formData.parsedAddress.calle && (
+                    <div className="flex sm:col-span-2">
+                      <span className="font-medium w-16 shrink-0 text-muted-foreground">Calle:</span>
+                      <span>
+                        {formData.parsedAddress.calle}
+                        {formData.parsedAddress.numero && ` ${formData.parsedAddress.numero}`}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="coordinates">Coordenadas (opcional)</Label>

@@ -17,8 +17,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
+interface ParsedAddress {
+  region: string
+  comuna: string
+  calle: string
+  numero: string
+  fullAddress: string
+}
+
 interface LocationMapProps {
-  onLocationSelect: (lat: number, lng: number, address?: string) => void
+  onLocationSelect: (lat: number, lng: number, address?: string, parsedAddress?: ParsedAddress) => void
   onClose: () => void
   initialLocation?: { lat: number; lng: number }
 }
@@ -26,19 +34,17 @@ interface LocationMapProps {
 // Santiago de Chile default coordinates
 const SANTIAGO_COORDS = { lat: -33.4489, lng: -70.6693 }
 
-function LocationPicker({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
-  const [position, setPosition] = useState<L.LatLng | null>(null)
-
+function LocationPicker({ onLocationSelect, selectedLocation }: {
+  onLocationSelect: (lat: number, lng: number) => void
+  selectedLocation: { lat: number; lng: number } | null
+}) {
   useMapEvents({
     click: (e) => {
-      setPosition(e.latlng)
       onLocationSelect(e.latlng.lat, e.latlng.lng)
     },
   })
 
-  return position === null ? null : (
-    <Marker position={position} />
-  )
+  return null // We'll render the marker in the main component to avoid duplication
 }
 
 export function LocationMap({ onLocationSelect, onClose, initialLocation }: LocationMapProps) {
@@ -50,6 +56,7 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
   const [isLoadingAddress, setIsLoadingAddress] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [suggestedAddress, setSuggestedAddress] = useState<string | null>(null)
+  const [parsedAddress, setParsedAddress] = useState<ParsedAddress | null>(null)
   const mapRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
@@ -57,7 +64,7 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
     getCurrentLocation()
   }, [])
 
-  const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
+  const reverseGeocode = async (lat: number, lng: number): Promise<{ address: string | null; parsed: ParsedAddress | null }> => {
     setIsLoadingAddress(true)
     try {
       const response = await fetch(
@@ -73,14 +80,22 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
 
       const data = await response.json()
 
-      if (data && data.display_name) {
-        return data.display_name
+      if (data && data.display_name && data.address) {
+        const parsed: ParsedAddress = {
+          region: data.address.state || data.address.region || '',
+          comuna: data.address.town || data.address.city || data.address.municipality || '',
+          calle: data.address.road || data.address.street || '',
+          numero: data.address.house_number || '',
+          fullAddress: data.display_name
+        }
+
+        return { address: data.display_name, parsed }
       }
 
-      return null
+      return { address: null, parsed: null }
     } catch (error) {
       console.error('Reverse geocoding error:', error)
-      return null
+      return { address: null, parsed: null }
     } finally {
       setIsLoadingAddress(false)
     }
@@ -110,9 +125,10 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
         }
 
         // Get address for this location
-        const address = await reverseGeocode(latitude, longitude)
-        if (address) {
-          setSuggestedAddress(address)
+        const result = await reverseGeocode(latitude, longitude)
+        if (result.address) {
+          setSuggestedAddress(result.address)
+          setParsedAddress(result.parsed)
         }
       },
       (error) => {
@@ -145,17 +161,19 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
     const newLocation = { lat, lng }
     setSelectedLocation(newLocation)
     setSuggestedAddress(null)
+    setParsedAddress(null)
 
     // Get address for the clicked location
-    const address = await reverseGeocode(lat, lng)
-    if (address) {
-      setSuggestedAddress(address)
+    const result = await reverseGeocode(lat, lng)
+    if (result.address) {
+      setSuggestedAddress(result.address)
+      setParsedAddress(result.parsed)
     }
   }
 
   const handleConfirm = () => {
     if (selectedLocation) {
-      onLocationSelect(selectedLocation.lat, selectedLocation.lng, suggestedAddress || undefined)
+      onLocationSelect(selectedLocation.lat, selectedLocation.lng, suggestedAddress || undefined, parsedAddress || undefined)
       onClose()
     }
   }
@@ -206,17 +224,39 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
                   Obteniendo dirección...
                 </div>
               )}
-              {suggestedAddress && (
+              {parsedAddress && (
                 <div className="text-sm text-foreground p-2 bg-muted rounded">
-                  <p className="font-medium mb-1">Dirección encontrada:</p>
-                  <p className="text-xs">{suggestedAddress}</p>
+                  <p className="font-medium mb-2">Dirección encontrada:</p>
+                  <div className="space-y-1 text-xs">
+                    {parsedAddress.region && (
+                      <div className="flex">
+                        <span className="font-medium w-14 shrink-0">Región:</span>
+                        <span className="text-muted-foreground">{parsedAddress.region}</span>
+                      </div>
+                    )}
+                    {parsedAddress.comuna && (
+                      <div className="flex">
+                        <span className="font-medium w-14 shrink-0">Comuna:</span>
+                        <span className="text-muted-foreground">{parsedAddress.comuna}</span>
+                      </div>
+                    )}
+                    {parsedAddress.calle && (
+                      <div className="flex">
+                        <span className="font-medium w-14 shrink-0">Calle:</span>
+                        <span className="text-muted-foreground">
+                          {parsedAddress.calle}
+                          {parsedAddress.numero && ` ${parsedAddress.numero}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <div className="h-96 w-full rounded-lg overflow-hidden border">
+        <div className="h-64 sm:h-96 w-full rounded-lg overflow-hidden border">
           <MapContainer
             center={[center.lat, center.lng]}
             zoom={13}
@@ -232,15 +272,22 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
               <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
             )}
 
-            <LocationPicker onLocationSelect={handleLocationPick} />
+            <LocationPicker
+              onLocationSelect={handleLocationPick}
+              selectedLocation={selectedLocation}
+            />
           </MapContainer>
         </div>
 
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={onClose}>
+        <div className="flex flex-col sm:flex-row gap-2 sm:justify-between pt-2">
+          <Button variant="outline" onClick={onClose} className="order-2 sm:order-1">
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={!selectedLocation}>
+          <Button
+            onClick={handleConfirm}
+            disabled={!selectedLocation}
+            className="order-1 sm:order-2 bg-primary hover:bg-primary/90"
+          >
             Confirmar Ubicación
           </Button>
         </div>
