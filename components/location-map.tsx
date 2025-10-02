@@ -18,11 +18,10 @@ L.Icon.Default.mergeOptions({
 })
 
 interface ParsedAddress {
-  region: string
-  comuna: string
-  calle: string
-  numero: string
-  fullAddress: string
+  region: string | null
+  comuna: string | null
+  calle: string | null
+  numero: string | null
 }
 
 interface LocationMapProps {
@@ -82,11 +81,10 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
 
       if (data && data.display_name && data.address) {
         const parsed: ParsedAddress = {
-          region: data.address.state || data.address.region || '',
-          comuna: data.address.town || data.address.city || data.address.municipality || '',
-          calle: data.address.road || data.address.street || '',
-          numero: data.address.house_number || '',
-          fullAddress: data.display_name
+          region: data.address.state || data.address.region || null,
+          comuna: data.address.town || data.address.city || data.address.municipality || null,
+          calle: data.address.road || data.address.street || null,
+          numero: data.address.house_number || null,
         }
 
         return { address: data.display_name, parsed }
@@ -201,18 +199,17 @@ export function LocationMap({ onLocationSelect, onClose, initialLocation }: Loca
           </Alert>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex justify-center mb-4">
           <Button
             variant="outline"
             size="sm"
             onClick={getCurrentLocation}
             disabled={isLoadingLocation}
+            className="w-full sm:w-auto"
           >
             <Locate className="h-4 w-4 mr-2" />
             {isLoadingLocation ? "Obteniendo..." : "Mi Ubicación"}
           </Button>
-
-
         </div>
 
         <div className="h-64 sm:h-96 w-full rounded-lg overflow-hidden border">
