@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Building2, FileText, Plus, LogOut, Menu } from "lucide-react"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
@@ -62,8 +62,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               href={item.href}
               onClick={() => setSidebarOpen(false)}
               className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${item.current
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
             >
               <Icon className="mr-3 h-5 w-5 shrink-0" />
@@ -99,24 +99,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar */}
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
-
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile Header */}
         <div className="flex h-16 items-center gap-4 border-b bg-card px-4 lg:hidden">
-          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-          </Sheet>
+          <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)}>
+            <Menu className="h-5 w-5" />
+          </Button>
           <div className="flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" />
             <span className="font-semibold">MuniDenuncia</span>
@@ -126,6 +115,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Page Content */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="w-[280px] sm:w-[320px] p-0">
+          <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+          <SheetDescription className="sr-only">
+            Menú principal con acceso a tus denuncias, crear nueva denuncia y cerrar sesión
+          </SheetDescription>
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
