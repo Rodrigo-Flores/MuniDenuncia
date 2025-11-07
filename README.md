@@ -121,14 +121,14 @@ MuniDenuncia/
 
 El proyecto está desplegado en Vercel:
 
-**[https://vercel.com/rodrigo-flores-projects/v0-muni-denuncia-web-app](https://vercel.com/rodrigo-flores-projects/v0-muni-denuncia-web-app)**
+**[https://v0-muni-denuncia-web-app.vercel.app/](https://v0-muni-denuncia-web-app.vercel.app/)**
 
 ## Usuarios de Prueba
 
 Puedes usar estas credenciales para probar la aplicación:
 
-- **Email**: `usuario@ejemplo.com`
-- **Contraseña**: `password123`
+- **Email**: `demo@munidenuncia.com`
+- **Contraseña**: `demo123`
 
 O crear una nueva cuenta en la página de registro.
 
@@ -146,7 +146,3 @@ Este proyecto fue desarrollado para facilitar la comunicación ciudadana con las
 ## Licencia
 
 Este proyecto es de código abierto y está disponible para uso educativo y de demostración.
-
----
-
-**Desarrollado para mejorar la gestión municipal ciudadana**
