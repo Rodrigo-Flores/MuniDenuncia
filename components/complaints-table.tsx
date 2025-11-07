@@ -109,9 +109,22 @@ export function ComplaintsTable({ complaints, onViewComplaint }: ComplaintsTable
                 <ComplaintStatusBadge status={complaint.status} />
               </div>
             </CardHeader>
+
             <CardContent className="pt-0">
+              {/* Descripción */}
               <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{complaint.description}</p>
 
+              {/* Estado breve */}
+              <div className="mb-4 bg-muted/30 rounded-md p-3 text-sm">
+                <p className="font-semibold mb-1">Estado actual:</p>
+                <p className="text-muted-foreground">
+                  {complaint.status === "Pendiente" && "En espera de revisión municipal."}
+                  {complaint.status === "En Revisión" && "Actualmente está siendo evaluada por el municipio."}
+                  {complaint.status === "Resuelto" && "El problema ha sido resuelto."}
+                </p>
+              </div>
+
+              {/* Detalles básicos */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-3 w-3" />
@@ -123,22 +136,23 @@ export function ComplaintsTable({ complaints, onViewComplaint }: ComplaintsTable
                 </div>
               </div>
 
+              {/* Botón destacado */}
               <Button
-                variant="outline"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation()
                   onViewComplaint(complaint)
                 }}
-                className="w-full"
+                className="w-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
               >
                 <Eye className="mr-2 h-4 w-4" />
-                Ver Detalles
+                Ver estado detallado
               </Button>
             </CardContent>
           </Card>
         ))}
       </div>
+
     </>
   )
 }
