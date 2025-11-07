@@ -1,30 +1,152 @@
-# MuniDenuncia web app
+# MuniDenuncia
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+Sistema web para la gestión de denuncias municipales que permite a los ciudadanos reportar problemas urbanos de manera sencilla y dar seguimiento a sus reportes.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/rodrigo-flores-projects/v0-muni-denuncia-web-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/1O2LsRykbdx)
+## Descripción del Proyecto
 
-## Overview
+**MuniDenuncia** es una aplicación web diseñada para facilitar la comunicación entre ciudadanos y municipalidades. Los usuarios pueden:
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+- **Reportar problemas municipales**: Iluminación, pavimento, basura, áreas verdes, infraestructura, tránsito, etc.
+- **Ubicación precisa**: Selección de ubicación mediante mapa interactivo con geocodificación inversa
+- **Adjuntar evidencia**: Subir hasta 5 fotografías del problema
+- **Seguimiento en tiempo real**: Ver el estado de las denuncias (Pendiente, En Revisión, Resuelto)
+- **Gestión de cuenta**: Registro, inicio de sesión y panel personal de denuncias
+- **Diseño responsive**: Optimizado para dispositivos móviles y escritorio
+
+## Tecnologías
+
+- **Framework**: Next.js 15.5.4 (App Router)
+- **UI**: React 19.1.1 con TypeScript
+- **Estilos**: Tailwind CSS con shadcn/ui components
+- **Mapas**: Leaflet + React-Leaflet
+- **Geocodificación**: Nominatim API (OpenStreetMap)
+- **Gestión de estado**: React Hooks (useState, useContext)
+- **Almacenamiento**: LocalStorage (datos de demostración)
+
+## Requisitos Previos
+
+- Node.js 18+ 
+- Yarn (gestor de paquetes)
+
+## Instalación y Ejecución
+
+### 1. Clonar el repositorio
+
+```bash
+git clone git@github.com:Rodrigo-Flores/MuniDenuncia.git
+cd MuniDenuncia
+```
+
+### 2. Instalar dependencias
+
+```bash
+yarn install
+```
+
+### 3. Ejecutar en modo desarrollo
+
+```bash
+yarn dev
+```
+
+La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
+
+### 4. Compilar para producción
+
+```bash
+yarn build
+```
+
+### 5. Ejecutar versión de producción
+
+```bash
+yarn start
+```
+
+## Estructura del Proyecto
+
+```
+MuniDenuncia/
+├── app/                          # Páginas de Next.js (App Router)
+│   ├── page.tsx                  # Página principal
+│   ├── crear-denuncia/          # Formulario de nueva denuncia
+│   ├── mis-denuncias/           # Panel de denuncias del usuario
+│   ├── ingresar/                # Inicio de sesión
+│   └── registrarse/             # Registro de usuario
+├── components/                   # Componentes reutilizables
+│   ├── ui/                      # Componentes base de shadcn/ui
+│   ├── complaint-form-wizard.tsx # Formulario multi-paso
+│   ├── location-map.tsx         # Mapa interactivo
+│   ├── complaints-table.tsx     # Tabla de denuncias
+│   └── dashboard-layout.tsx     # Layout del dashboard
+├── hooks/                       # Custom React Hooks
+│   ├── use-auth.tsx            # Autenticación
+│   ├── use-complaints.ts       # Gestión de denuncias
+│   └── use-local-storage.ts    # Persistencia local
+└── lib/                        # Utilidades y configuración
+    └── utils.ts                # Funciones auxiliares
+```
+
+## Funcionalidades Principales
+
+### Para Ciudadanos
+
+1. **Crear Denuncia**
+   - Formulario de 3 pasos (Tipo de problema, Ubicación, Detalles)
+   - Selección de ubicación en mapa con autocompletado de dirección
+   - Campos estructurados: Región, Comuna, Calle, Número
+   - Carga de fotografías (máx. 5 imágenes, 5MB c/u)
+
+2. **Gestión de Denuncias**
+   - Vista de todas las denuncias del usuario
+   - Filtros por estado y búsqueda
+   - Estadísticas (Total, Pendientes, En Revisión, Resueltas)
+   - Detalle completo con historial de estados
+
+3. **Sistema de Autenticación**
+   - Registro con nombre, email y contraseña
+   - Inicio de sesión persistente
+   - Protección de rutas privadas
+
+### Panel de Denuncias
+
+- Tarjetas con métricas de denuncias
+- Búsqueda y filtros avanzados
+- Vista responsive (tabla en desktop, cards en móvil)
+- Mapa de ubicación en detalle de denuncia
+- Historial de cambios de estado
+- Respuestas simuladas de la municipalidad
 
 ## Deployment
 
-Your project is live at:
+El proyecto está desplegado en Vercel:
 
 **[https://vercel.com/rodrigo-flores-projects/v0-muni-denuncia-web-app](https://vercel.com/rodrigo-flores-projects/v0-muni-denuncia-web-app)**
 
-## Build your app
+## Usuarios de Prueba
 
-Continue building your app on:
+Puedes usar estas credenciales para probar la aplicación:
 
-**[https://v0.app/chat/projects/1O2LsRykbdx](https://v0.app/chat/projects/1O2LsRykbdx)**
+- **Email**: `usuario@ejemplo.com`
+- **Contraseña**: `password123`
 
-## How It Works
+O crear una nueva cuenta en la página de registro.
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## Notas de Desarrollo
+
+- Los datos se almacenan en **localStorage** (solo demostración)
+- Las denuncias incluyen datos de ejemplo pre-cargados
+- El sistema de autenticación es simulado (sin backend real)
+- La geocodificación usa la API pública de Nominatim
+
+## Contribución
+
+Este proyecto fue desarrollado para facilitar la comunicación ciudadana con las municipalidades.
+
+## Licencia
+
+Este proyecto es de código abierto y está disponible para uso educativo y de demostración.
+
+---
+
+**Desarrollado para mejorar la gestión municipal ciudadana**
