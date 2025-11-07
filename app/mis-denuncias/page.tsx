@@ -68,12 +68,25 @@ export default function MisDenunciasPage() {
             <h1 className="text-3xl font-bold text-balance">Mis Denuncias</h1>
             <p className="text-muted-foreground mt-1">Gestiona y da seguimiento a tus reportes municipales</p>
           </div>
-          <Button asChild className="mt-4 sm:mt-0">
-            <Link href="/crear-denuncia">
-              <Plus className="mr-2 h-4 w-4" />
-              Nueva Denuncia
-            </Link>
-          </Button>
+          <div className="flex flex-col gap-2 mt-4 sm:mt-0">
+            <Button asChild>
+              <Link href="/crear-denuncia">
+                <Plus className="mr-2 h-4 w-4" />
+                Nueva Denuncia
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const section = document.getElementById("detalle-denuncias")
+                if (section) {
+                  section.scrollIntoView({ behavior: "smooth" })
+                }
+              }}
+            >
+              Ver Estado
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -140,7 +153,9 @@ export default function MisDenunciasPage() {
             </CardContent>
           </Card>
         ) : (
-          <ComplaintsTable complaints={filteredComplaints} onViewComplaint={handleViewComplaint} />
+          <div id="detalle-denuncias">
+            <ComplaintsTable complaints={filteredComplaints} onViewComplaint={handleViewComplaint} />
+          </div>
         )}
 
         {/* Detail Modal */}
