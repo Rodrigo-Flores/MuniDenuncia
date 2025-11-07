@@ -1,7 +1,7 @@
 "use client"
 
 import type { Complaint } from "@/hooks/use-complaints"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -84,6 +84,9 @@ export function ComplaintDetailModal({ complaint, open, onOpenChange }: Complain
             <span>Denuncia #{complaint.id}</span>
             <ComplaintStatusBadge status={complaint.status} />
           </DialogTitle>
+          <DialogDescription>
+            Detalles completos de tu denuncia municipal incluyendo estado, ubicación e historial de seguimiento.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
